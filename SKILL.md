@@ -1,5 +1,10 @@
 ---
 name: copy-drift-check
+version: 1.0.0
+display_name: 副本漂移检查
+display_name_en: Copy Drift Check
+description_zh: 找出「同名文件散落多处、内容却不一致」的副本漂移，逐份列出路径 / 体积 / mtime / md5，供你判断哪一份是权威。适用场景：改了本体、别的副本漏没漏改；某检查或报告的结论可疑，怀疑跑的是旧副本；盘点或清理多份副本的目录；给同步链做本体↔副本的 md5 体检；发布或删除前先核对副本。只读，不写盘、不删文件、不联网。
+description_en: Find copy drift - the same filename existing in several places with different contents. Lists each copy's path, size, mtime and md5 so you can judge which one is authoritative. Use when you changed one copy of a script/doc/config and need to prove no other copy was missed; when a check or report gives a suspicious or outdated result and you suspect it ran from a stale copy; when auditing or cleaning a layout that keeps multiple copies; when verifying a sync pipeline by md5; or before publishing or deleting files in a duplicated layout. Read-only - writes nothing, deletes nothing, and never goes online.
 description: 查「副本漂移」：同一文件名散落在多处、内容却不一致（同名不同内容 / copy drift）。凡「改了本体，别的副本漏没漏改」「某检查或报告的结论可疑，怀疑跑的是旧副本」「盘点 / 清理多份副本的目录」「给同步链做本体↔副本 md5 体检」「发布或删除前先核对副本」都用它。Detect copy drift - the same filename existing in several places with different contents; use when you changed one copy of a script/doc/config and need to prove no other copy was missed, when a check or report gives a suspicious or outdated result and you suspect it was run from a stale copy, when auditing or cleaning a layout that keeps multiple copies (repo copy vs installed copy vs per-project instance), when verifying a sync pipeline is actually in sync (authoritative copy vs mirror, by md5), or before publishing/deleting files in a duplicated layout. Also covers the two failure modes it exists to catch - a stale copy that still runs and still prints a confident but wrong conclusion, and the root cause of such misses, which is inventorying copies by known paths instead of searching by value.
 agent_created: true
 ---
