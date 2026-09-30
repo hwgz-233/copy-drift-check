@@ -104,12 +104,44 @@ Windows 下把 `python` 换成 `py -3` 或解释器全路径即可，命令其�
 
 | 情形 | 处理 |
 |---|---|
-| **按项目实例化的副本**（同一脚本拷到每个子项目、里面改写了路径常量） | `--ignore "/instances/"`、`--ignore "/tools/"` |
-| **冻结归档 / 历史快照**（明确不再维护，允许与现役不同） | `--ignore "/archive/"`、`--ignore "/2025-"` |
+| **按项目实例化的副本**（同一脚本拷到每个子项目、里面改写了路径常量） | `--ignore "instances/"`、`--ignore "tools/"` |
+| **冻结归档 / 历史快照**（明确不再维护，允许与现役不同） | `--ignore "archive/"`、`--ignore "2025-"` |
 | **模板 vs 生成物**（模板里的占位符本来就不等于成品） | 用 `--ext` / `--name` 收窄，或排除生成物目录 |
 
-`--ignore` 比的是**完整路径**：先按子串、再按 glob 试，不区分大小写，`/` 与 `\` 等价 ——
-**一律写 `/` 即可，两个平台通用**。路径含空格时，命令行要加引号。
+`--ignore` 比的是**完整路径**：先按子串、再按 glob 试，不区分大小写，`/` 与 `\` 等价。
+
+### 🔴 写法必须「不带前导斜杠」
+
+**写 `archive/`，不要写 `/archive/`。** 后者在 **Git Bash / MSYS2 / Cygwin** 下会被 shell 的
+**路径转换**悄悄改写成 `C:/.../PortableGit/versions/x.y.z/archive/`（MSYS 把 `/` 开头的参数当绝对路径），
+于是永远匹配不上 —— **静默失效：不报错、不警告，只是没排除**。
+
+| 写法 | Git Bash / MSYS |
+|---|---|
+| `--ignore "/archive/"` | ❌ 被改写，失效 |
+| `--ignore "archive/"` | ✅ **推荐** |
+| `--ignore "*/archive/*"` | ✅ 安全（glob 不触发改写） |
+| `MSYS_NO_PATHCONV=1` ＋ `/archive/` | ✅ 可用 |
+
+cmd / PowerShell 下不受影响，但统一写**不带前导斜杠**最省心。
+
+### ⚠️ 别拿它扫一整个混合目录
+
+`--root` 指向一个装着多种无关文件的大目录时，会出现大量**假阳性** ——
+比如把一堆不相干的 `SKILL.md`、`README.md` 判成"漂移组"（它们本来就该各不相同）。
+
+这个工具的正确姿势是**收窄到"同一个工具的若干份副本"**：
+
+```bash
+# 好：只看这一组副本
+--root ./src --root ./deploy --name "sync.py"
+
+# 好：先用扩展名收窄，再排除不该比的
+--root ./repo --ext .py --ignore "fixtures/"
+
+# 差：裸扫大目录，噪声淹没有用信号
+--root ~/.workbuddy/skills
+```
 
 > **只有把"该不同的"排除干净，"不该不同的"才会跳出来。**
 
@@ -163,7 +195,7 @@ export PYTHONIOENCODING=utf-8  # 或 Git Bash / Linux / macOS
 python scripts/check_copy_drift.py \
     --root ./src --root ./deploy \
     --ext .py,.md,.json \
-    --ignore "/archive/" --ignore "/fixtures/" \
+    --ignore "archive/" --ignore "fixtures/" \
     --quiet
 # 退出码 1 视为阻断
 ```
